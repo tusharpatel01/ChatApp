@@ -87,7 +87,7 @@ export const getOtherUsers=async(req,res)=>{
     return res.status(200).json(otherUsers);
   } 
   catch (error) {
-    console.log(error); 
+    console.log(error);
   }
 }
 

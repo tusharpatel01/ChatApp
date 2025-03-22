@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-const convomodel=new mongoose.Schema({
+const conversationModel=new mongoose.Schema({
     participants:[{
         type:mongoose.Types.ObjectId,
         ref:"User",
@@ -11,4 +11,4 @@ const convomodel=new mongoose.Schema({
 
 },{timestamps:true})
 
-export const Convo=mongoose.model("Convo",convomodel)
+export const Conversation=mongoose.model("Conversation",conversationModel)
