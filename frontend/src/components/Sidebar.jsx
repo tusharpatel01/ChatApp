@@ -1,11 +1,34 @@
-import React from "react";
+import React, { useState } from "react";
 import { MdPersonSearch } from "react-icons/md";
-import Otherusers from "./Otherusers";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useSelector,useDispatch } from "react-redux";
+// import { setOtherUsers } from "../redux/userSlice";
+import Otherusers from "./Otherusers.jsx";
+import { setAuthUser, setOtherUsers } from "../redux/userSlice";
 
 function Sidebar() {
+  const {otherUsers} =useSelector((store)=>store.user)
+  const dispatch=useDispatch()
+
+  const [input, setInput] = useState("");
+
+  const searchHandler = (e) => {
+    e.preventDefault();
+    console.log(input);
+
+    const conversationUser=otherUsers.find((user)=>user.fullName.toLowerCase().includes(input.toLowerCase()))
+    console.log(conversationUser);
+    
+    if(conversationUser){
+      dispatch(setOtherUsers([conversationUser]))
+    }
+    else{
+      toast.error("User not found")
+    }
+  };
+
   const navigate = useNavigate();
   const logOutHandler = async () => {
     try {
@@ -13,6 +36,7 @@ function Sidebar() {
       console.log(res);
       if (res.data?.message) {
         toast.success(res.data.message);
+        dispatch(setAuthUser(null));
       } else {
         toast.success("Logged out successfully!");
       }
@@ -24,9 +48,11 @@ function Sidebar() {
   };
   return (
     <div className="border-r border-slate-500 p-4 flex flex-col">
-      <form action="">
+      <form onSubmit={searchHandler}>
         <div className="flex gap-2">
           <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
             type="text"
             className="input input-bordered rounded-md "
             placeholder="search..."

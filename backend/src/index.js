@@ -1,75 +1,58 @@
 import dotenv from "dotenv";
 import connectDB from "./db/dbindex.js";
 import { app } from "./app.js";
+import { createServer } from "http";
+import { Server } from "socket.io";
 
+dotenv.config();
 
-dotenv.config({});
+export const getReceiverSocketId = (receiverId) => {
+  return userSocketMap[receiverId];
+};
 
-
-
+// Connect to MongoDB
 connectDB()
-.then(()=>{
-    app.listen(process.env.PORT || 5000, () => {
-        console.log(`Server started at http://localhost:${process.env.PORT}`);
-        
-    })
+  .then(() => {
+    const server = createServer(app); // Create an HTTP server
+    const io = new Server(server, {
+      cors: {
+        origin: "http://localhost:5173", // Adjust based on frontend URL
+        methods: ["GET", "POST"],
+      },
+    });
+
+    const userSocketMap = {};
     
-})
-.catch((err)=>{
-    console.log(err);
-    // process.exit(1);
     
-})
-app.get("/",(req,res)=>{
-    res.send("Hello World");
-})
 
+    io.on("connection", (socket) => {
+      console.log("A user connected:", socket.id);
 
+      const userId = socket.handshake.query.userId;
 
+      if (userId) {
+        userSocketMap[userId] = socket.id;
+        io.emit("getOnlineUsers", Object.keys(userSocketMap)); // Emit updated list
+      }
 
+      console.log(userSocketMap);
 
+      socket.on("disconnect", () => {
+        console.log("User disconnected:", socket.id);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*(async()=>{
-
-    try {
-        await mongoose.connect(`${process.env.MONGO_URI}/${DB_NAME}`, )
-        app.on("error",(error)=>{
-            console.log(error);
-            throw error;
-            
-        })
-
-        } catch (error) {
-            console.log(error);
-            throw error;
-            
+        if (userId) {
+          delete userSocketMap[userId];
+          io.emit("getOnlineUsers", Object.keys(userSocketMap)); // Emit updated list
         }
+      });
+    });
 
-        try {
-            app.listen(process.env.PORT,()=>{
-                console.log(`Server started at http://localhost:${process.env.PORT}`);
-                
-            })
-        
-    } catch (error) {
-        console.log(error);
-        throw error;
-        
-    }
-
-})()
-    */
+    // Start the server after setting up WebSocket events
+    const PORT = process.env.PORT || 8000;
+    server.listen(PORT, () => {
+      console.log(`Server started at http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Database connection failed:", err);
+  });

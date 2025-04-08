@@ -10,10 +10,10 @@ const Otherusers = () => {
     return <div>Loading...</div>;
   }
   return (
-    <div className="overflow-auto flex-1">
+    <div className=" overflow-auto flex-1">
       {
       otherUsers?.map((user) => (
-        <Otheruser key={user._id} user={user} />
+        <Otheruser  key={user._id} user={user} />
       ))
       }
     </div>
